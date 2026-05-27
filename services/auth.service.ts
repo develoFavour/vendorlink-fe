@@ -23,6 +23,8 @@ export type AuthResponse = {
       category?: string;
       status: string;
     } | null;
+    token?: string;
+    refreshToken?: string;
   };
   message: string;
   success: boolean;

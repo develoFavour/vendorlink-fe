@@ -1,11 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Store, User } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginSelectionPage() {
+  const [nextParam, setNextParam] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setNextParam(params.get("next") || "");
+  }, []);
+
+  const withNext = (href: string) => {
+    if (!nextParam) return href;
+    return `${href}?next=${encodeURIComponent(nextParam)}`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -24,7 +37,7 @@ export default function LoginSelectionPage() {
       </div>
 
       <div className="mb-6 flex flex-col gap-3">
-        <Link href="/auth/login/buyer" className="w-full">
+        <Link href={withNext("/auth/login/buyer")} className="w-full">
           <Button
             variant="outline"
             className="h-16 w-full justify-start gap-4 rounded-2xl border-black/[0.06] bg-[#FAFAF8] px-5 text-[#111] transition-all hover:bg-black/[0.02] hover:text-[#111] hover:border-black/20"
@@ -39,7 +52,7 @@ export default function LoginSelectionPage() {
           </Button>
         </Link>
         
-        <Link href="/auth/login/seller" className="w-full">
+        <Link href={withNext("/auth/login/seller")} className="w-full">
           <Button
             variant="outline"
             className="h-16 w-full justify-start gap-4 rounded-2xl border-black/[0.06] bg-[#FAFAF8] px-5 text-[#111] transition-all hover:bg-black/[0.02] hover:text-[#111] hover:border-black/20"
@@ -54,7 +67,7 @@ export default function LoginSelectionPage() {
           </Button>
         </Link>
 
-        <Link href="/auth/login/admin" className="w-full">
+        <Link href={withNext("/auth/login/admin")} className="w-full">
           <Button
             variant="outline"
             className="h-16 w-full justify-start gap-4 rounded-2xl border-black/[0.06] bg-[#FAFAF8] px-5 text-[#111] transition-all hover:bg-black/[0.02] hover:text-[#111] hover:border-black/20"
@@ -73,7 +86,7 @@ export default function LoginSelectionPage() {
       <p className="text-[12px] text-[#111]/45">
         Don&apos;t have an account?{" "}
         <Link
-          href="/auth/register"
+          href={withNext("/auth/register")}
           className="font-bold text-[#111] transition-colors hover:text-[#C4553A]"
         >
           Sign up

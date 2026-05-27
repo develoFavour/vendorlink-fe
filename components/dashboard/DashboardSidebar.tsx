@@ -10,6 +10,7 @@ import {
 } from "@/constants/dashboard-nav.const";
 import type { DashboardRole } from "@/types/dashboard";
 import { authService } from "@/services/auth.service";
+import { clearFrontendAuthSession } from "@/lib/auth-session";
 
 type DashboardSidebarProps = {
 	role: DashboardRole;
@@ -34,6 +35,7 @@ export function DashboardSidebarContent({ role, onNavigate }: DashboardSidebarCo
 		} catch {
 			toast.error("Session ended locally.");
 		} finally {
+			clearFrontendAuthSession();
 			onNavigate?.();
 			router.refresh();
 			router.replace("/auth/login");

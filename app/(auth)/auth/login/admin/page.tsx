@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services/auth.service";
 import { handleApiError } from "@/utils/response";
+import { toast } from "sonner";
+import { setFrontendAuthSession } from "@/lib/auth-session";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -31,15 +33,22 @@ export default function AdminLoginPage() {
       });
 
       if (response.data.user.role !== "ADMIN") {
-        setError("This login is only for administrator accounts.");
+        const message = "This login is only for administrator accounts.";
+        setError(message);
+        toast.error(message);
         return;
       }
+
+      toast.success(response.message || "Logged in successfully.");
+      setFrontendAuthSession(response.data.user.role, response.data.token, response.data.refreshToken);
 
       const searchParams = new URLSearchParams(window.location.search);
       router.push(searchParams.get("next") || "/admin");
       router.refresh();
     } catch (err) {
-      setError(handleApiError(err));
+      const message = handleApiError(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

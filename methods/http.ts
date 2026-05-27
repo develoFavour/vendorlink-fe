@@ -1,6 +1,12 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_ENDPOINTS, BASE_URL } from '@/constants/endpoint.const';
 import { handleApiError } from '@/utils/response';
+import {
+  clearFrontendAuthSession,
+  getFrontendAccessToken,
+  getFrontendRefreshToken,
+  setFrontendAuthSession,
+} from '@/lib/auth-session';
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -34,6 +40,11 @@ axiosInstance.interceptors.request.use(
       delete config.headers['Content-Type'];
     }
 
+    const accessToken = getFrontendAccessToken();
+    if (accessToken && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -54,7 +65,17 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await axiosInstance.post(API_ENDPOINTS.AUTH.REFRESH);
+        const refreshToken = getFrontendRefreshToken();
+        const refreshResponse = await axiosInstance.post(
+          API_ENDPOINTS.AUTH.REFRESH,
+          refreshToken ? { refreshToken } : undefined
+        );
+        const data = refreshResponse.data?.data;
+
+        if (data?.user?.role) {
+          setFrontendAuthSession(data.user.role, data.token, data.refreshToken);
+        }
+
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         try {
@@ -63,6 +84,7 @@ axiosInstance.interceptors.response.use(
           // The refresh token may already be invalid; redirecting is enough for the user flow.
         }
 
+        clearFrontendAuthSession();
         redirectToLogin();
         return Promise.reject(refreshError);
       }

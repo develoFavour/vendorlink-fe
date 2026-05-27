@@ -132,9 +132,9 @@ export default function VendorDetailsPage() {
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-5">
               {products.map((product) => {
-                const isWishlisted = wishlist.has(product._id || product.id);
+                const productId = product.id;
+                const isWishlisted = wishlist.has(productId);
                 const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
-                const productId = product._id || product.id;
                 
                 return (
                   <article

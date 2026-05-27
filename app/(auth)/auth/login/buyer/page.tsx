@@ -10,6 +10,8 @@ import { authService } from "@/services/auth.service";
 import { handleApiError } from "@/utils/response";
 import { motion } from "framer-motion";
 import { publicShoppingStorage, syncPublicShoppingToBuyer } from "@/lib/public-shopping";
+import { toast } from "sonner";
+import { setFrontendAuthSession } from "@/lib/auth-session";
 
 export default function BuyerLoginPage() {
   const router = useRouter();
@@ -46,6 +48,9 @@ export default function BuyerLoginPage() {
         password: String(formData.get("password")),
       });
 
+      toast.success(response.message || "Logged in successfully.");
+      setFrontendAuthSession(response.data.user.role, response.data.token, response.data.refreshToken);
+
       if (response.data.user.role === "VENDOR") {
         router.push("/seller");
       } else if (response.data.user.role === "ADMIN") {
@@ -54,14 +59,18 @@ export default function BuyerLoginPage() {
         try {
           await syncPublicShoppingToBuyer();
         } catch {
-          setError("You are signed in, but we could not sync your saved public cart. Please try adding the item again.");
+          const message = "You are signed in, but we could not sync your saved public cart. Please try adding the item again.";
+          setError(message);
+          toast.error(message);
           return;
         }
         router.push(nextParam || getFallbackRedirect());
       }
       router.refresh();
     } catch (err) {
-      setError(handleApiError(err));
+      const message = handleApiError(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

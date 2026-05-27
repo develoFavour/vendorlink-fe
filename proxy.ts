@@ -24,8 +24,9 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
+  const frontendSession = request.cookies.get("auth_session")?.value;
   const role = request.cookies.get("auth_role")?.value;
-  const hasSession = Boolean(token || refreshToken);
+  const hasSession = Boolean(token || refreshToken || frontendSession);
   const isAuthPage = authPages.includes(pathname);
   const isProtectedRoute = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 

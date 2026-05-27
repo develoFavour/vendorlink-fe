@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { authService } from "@/services/auth.service";
 import { handleApiError } from "@/utils/response";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { setFrontendAuthSession } from "@/lib/auth-session";
 
 export default function SellerLoginPage() {
   const router = useRouter();
@@ -30,15 +32,22 @@ export default function SellerLoginPage() {
       });
 
       if (response.data.user.role !== "VENDOR" && response.data.user.role !== "ADMIN") {
-        setError("This login is only for vendor accounts.");
+        const message = "This login is only for vendor accounts.";
+        setError(message);
+        toast.error(message);
         return;
       }
+
+      toast.success(response.message || "Logged in successfully.");
+      setFrontendAuthSession(response.data.user.role, response.data.token, response.data.refreshToken);
 
       const searchParams = new URLSearchParams(window.location.search);
       router.push(searchParams.get("next") || "/seller");
       router.refresh();
     } catch (err) {
-      setError(handleApiError(err));
+      const message = handleApiError(err);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

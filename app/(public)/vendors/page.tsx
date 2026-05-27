@@ -2,23 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { vendorService } from '@/services/vendor.service';
+import { vendorService, type PublicVendor } from '@/services/vendor.service';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Store, Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-interface Vendor {
-  _id: string;
-  storeName: string;
-  slug: string;
-  description: string;
-  category: string;
-}
-
 export default function VendorsPage() {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendors, setVendors] = useState<PublicVendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
