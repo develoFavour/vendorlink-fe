@@ -1,6 +1,6 @@
 export const BASE_URL =
 	process.env.NEXT_PUBLIC_API_URL ||
-	"https://vendorlink-be.onrender.com/api/v1";
+	"http://localhost:5000/api/v1";
 
 export const API_ENDPOINTS = {
 	AUTH: {

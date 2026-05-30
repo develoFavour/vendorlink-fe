@@ -10,7 +10,7 @@ import {
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -19,8 +19,14 @@ const axiosInstance = axios.create({
 
 type RetryableRequestConfig = AxiosRequestConfig & {
   _retry?: boolean;
+  _networkRetry?: boolean;
   url?: string;
 };
+
+const wait = (milliseconds: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 
 const redirectToLogin = () => {
   if (typeof window === 'undefined') return;
@@ -56,10 +62,22 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config as RetryableRequestConfig | undefined;
     const status = error.response?.status;
     const url = originalRequest?.url || '';
+    const method = originalRequest?.method?.toLowerCase();
+    const isSafeRetry =
+      originalRequest &&
+      method === 'get' &&
+      !originalRequest._networkRetry &&
+      (error.code === 'ECONNABORTED' || !error.response || (status && status >= 500));
     const isAuthRecoveryRequest =
       url.includes(API_ENDPOINTS.AUTH.LOGIN) ||
       url.includes(API_ENDPOINTS.AUTH.LOGOUT) ||
       url.includes(API_ENDPOINTS.AUTH.REFRESH);
+
+    if (isSafeRetry && !isAuthRecoveryRequest) {
+      originalRequest._networkRetry = true;
+      await wait(900);
+      return axiosInstance(originalRequest);
+    }
 
     if (status === 401 && originalRequest && !originalRequest._retry && !isAuthRecoveryRequest) {
       originalRequest._retry = true;
